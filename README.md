@@ -143,13 +143,13 @@ Example endpoints:
 
 ---
 
-### 5. Forecast Display (Time - 20 + x )
+### 5. Forecast Display (Time - 20)
 - [x] Show forecast period (name/time)
 - [x] Display temperature and units
 - [x] Display short forecast
 - [x] Display detailed forecast
 - [x] Implement daily view
-- [ ] Implement hourly view ( x )
+
 
 ---
 
@@ -167,6 +167,15 @@ Example endpoints:
 - [x] Test invalid inputs
 - [x] Verify API failure handling
 - [x] Confirm forecast renders correctly
+
+### 7.5 UI Polish / Weather Dashboard (Time - 10)
+- [ ] Replace table-heavy layout with weather dashboard cards
+- [ ] Add current forecast summary card
+- [ ] Add selected state/zone/station header
+- [ ] Convert zone/station selection to dropdowns or cleaner cards
+- [ ] Add 7-day forecast cards
+- [ ] Add selected day behavior
+- [ ] Add hourly forecast section
 
 ---
 

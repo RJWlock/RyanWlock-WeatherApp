@@ -1,0 +1,231 @@
+﻿@page "/forecast/{Latitude}/{Longitude}/{StationId}"
+@rendermode InteractiveServer
+
+@using CanAmWeatherApp.Services
+@using System.Globalization
+@inject WeatherService WeatherService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Forecast</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+
+    <MudButton Variant="Variant.Outlined"
+               Color="Color.Primary"
+               Class="mb-4"
+               OnClick="@(() => NavigationManager.NavigateTo("/weather"))">
+        Back to Search
+    </MudButton>
+
+    @if (isLoadingForecast)
+    {
+        <MudProgressCircular Indeterminate="true" Class="my-4" />
+    }
+
+    @if (!string.IsNullOrWhiteSpace(forecastError))
+    {
+        <MudAlert Severity="Severity.Error" Class="my-4">
+            @forecastError
+        </MudAlert>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(forecastEmpty))
+    {
+        <MudAlert Severity="Severity.Info" Class="my-4">
+            @forecastEmpty
+        </MudAlert>
+    }
+
+    @if (forecastPeriods is not null && forecastPeriods.Count > 0)
+    {
+        var current = forecastPeriods.First();
+        var upcoming = forecastPeriods.Skip(1).Take(7).ToList();
+
+        <MudPaper Class="pa-5 mb-5 rounded-xl forecast-hero" Elevation="4">
+            <MudText Typo="Typo.h4" Class="mb-1">
+                @StationId
+            </MudText>
+
+            <MudText Typo="Typo.body2" Class="mb-4">
+                Current forecast
+            </MudText>
+
+            <MudGrid AlignItems="Center">
+                <MudItem xs="12" md="6">
+                    <MudPaper Class="pa-5 rounded-xl current-card" Elevation="0">
+                        <MudGrid AlignItems="Center">
+                            <MudItem xs="4">
+                                <MudText Class="weather-icon">
+                                    @GetWeatherIcon(current.ShortForecast)
+                                </MudText>
+                            </MudItem>
+
+                            <MudItem xs="8">
+                                <MudText Typo="Typo.h2">
+                                    @current.Temperature°@current.TemperatureUnit
+                                </MudText>
+
+                                <MudText Typo="Typo.h6">
+                                    @current.ShortForecast
+                                </MudText>
+
+                                <MudText Typo="Typo.body2">
+                                    @current.Name
+                                </MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.h6" Class="mb-2">
+                        Details
+                    </MudText>
+
+                    <MudText Typo="Typo.body1">
+                        @current.DetailedForecast
+                    </MudText>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <MudText Typo="Typo.h5" Class="mb-3">
+            7 Period Forecast
+        </MudText>
+
+        <MudGrid>
+            @foreach (var period in upcoming)
+            {
+                <MudItem xs="12" sm="6" md="3">
+                    <MudPaper Class="pa-4 rounded-xl forecast-card" Elevation="3">
+                        <MudText Typo="Typo.h6">
+                            @period.Name
+                        </MudText>
+
+                        <MudText Class="small-weather-icon my-2">
+                            @GetWeatherIcon(period.ShortForecast)
+                        </MudText>
+
+                        <MudText Typo="Typo.h4">
+                            @period.Temperature°@period.TemperatureUnit
+                        </MudText>
+
+                        <MudText Typo="Typo.body1" Class="mt-2">
+                            @period.ShortForecast
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+
+</MudContainer>
+
+<style>
+    .forecast-hero {
+        background: linear-gradient(135deg, #3f8ecb, #1f5f99);
+        color: white;
+    }
+
+    .current-card {
+        background-color: rgba(18, 43, 67, 0.75);
+        color: white;
+    }
+
+    .forecast-card {
+        background-color: #173954;
+        color: white;
+        min-height: 210px;
+    }
+
+    .weather-icon {
+        font-size: 72px;
+        text-align: center;
+    }
+
+    .small-weather-icon {
+        font-size: 42px;
+        text-align: center;
+    }
+</style>
+
+@code {
+    [Parameter] public string? Latitude { get; set; }
+    [Parameter] public string? Longitude { get; set; }
+    [Parameter] public string? StationId { get; set; }
+
+    private List<ForecastPeriod>? forecastPeriods;
+
+    private bool isLoadingForecast;
+    private string? forecastError;
+    private string? forecastEmpty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadForecast();
+    }
+
+    private async Task LoadForecast()
+    {
+        if (!double.TryParse(Latitude, CultureInfo.InvariantCulture, out var latitude) ||
+            !double.TryParse(Longitude, CultureInfo.InvariantCulture, out var longitude))
+        {
+            forecastError = "Invalid station coordinates.";
+            return;
+        }
+
+        isLoadingForecast = true;
+
+        try
+        {
+            var pointData = await WeatherService.GetPointDataAsync(latitude, longitude);
+
+            if (string.IsNullOrWhiteSpace(pointData.Properties.Forecast))
+            {
+                forecastEmpty = "No forecast endpoint was available for this station.";
+                return;
+            }
+
+            var forecast = await WeatherService.GetForecastAsync(pointData.Properties.Forecast);
+            forecastPeriods = forecast.Properties.Periods;
+
+            if (forecastPeriods.Count == 0)
+            {
+                forecastEmpty = "No forecast periods were returned for this station.";
+            }
+        }
+        catch (Exception ex)
+        {
+            forecastError = $"Failed to load forecast. {ex.Message}";
+        }
+        finally
+        {
+            isLoadingForecast = false;
+        }
+    }
+
+    private string GetWeatherIcon(string forecast)
+    {
+        forecast = forecast.ToLower();
+
+        if (forecast.Contains("sun") || forecast.Contains("clear"))
+            return "☀️";
+
+        if (forecast.Contains("cloud"))
+            return "☁️";
+
+        if (forecast.Contains("rain") || forecast.Contains("shower"))
+            return "🌧️";
+
+        if (forecast.Contains("snow"))
+            return "❄️";
+
+        if (forecast.Contains("storm") || forecast.Contains("thunder"))
+            return "⛈️";
+
+        if (forecast.Contains("fog"))
+            return "🌫️";
+
+        return "🌤️";
+    }
+}

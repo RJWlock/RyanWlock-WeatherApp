@@ -2,7 +2,9 @@
 @rendermode InteractiveServer
 
 @using CanAmWeatherApp.Services
+@using System.Globalization
 @inject WeatherService WeatherService
+@inject NavigationManager NavigationManager
 
 <PageTitle>Weather</PageTitle>
 
@@ -56,8 +58,8 @@
         </HeaderContent>
 
         <RowTemplate>
-            <MudTd DataLabel="Zone ID">@context.Properties.Id</MudTd>
-            <MudTd DataLabel="Name">@context.Properties.Name</MudTd>
+            <MudTd>@context.Properties.Id</MudTd>
+            <MudTd>@context.Properties.Name</MudTd>
             <MudTd>
                 <MudButton Variant="Variant.Outlined"
                            Color="Color.Primary"
@@ -108,54 +110,12 @@
                                     <MudTd>@station.Properties.StationIdentifier</MudTd>
                                     <MudTd>@station.Properties.Name</MudTd>
                                     <MudTd>
-                                        <MudButton Variant="Variant.Outlined"
+                                        <MudButton Variant="Variant.Filled"
                                                    Color="Color.Secondary"
-                                                   OnClick="@(() => SelectStation(station))">
+                                                   OnClick="@(() => GoToForecastPage(station))">
                                             Forecast
                                         </MudButton>
                                     </MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        }
-
-                        @if (isLoadingForecast)
-                        {
-                            <MudProgressCircular Indeterminate="true" Class="my-4" />
-                        }
-
-                        @if (!string.IsNullOrWhiteSpace(forecastError))
-                        {
-                            <MudAlert Severity="Severity.Error" Class="my-4">
-                                @forecastError
-                            </MudAlert>
-                        }
-
-                        @if (!string.IsNullOrWhiteSpace(forecastEmpty))
-                        {
-                            <MudAlert Severity="Severity.Info" Class="my-4">
-                                @forecastEmpty
-                            </MudAlert>
-                        }
-
-                        @if (forecastPeriods is not null)
-                        {
-                            <MudText Typo="Typo.h6" Class="mt-4 mb-2">
-                                Forecast for @selectedStationId
-                            </MudText>
-
-                            <MudTable Items="forecastPeriods" Dense="true" Hover="true">
-                                <HeaderContent>
-                                    <MudTh>Period</MudTh>
-                                    <MudTh>Temperature</MudTh>
-                                    <MudTh>Short Forecast</MudTh>
-                                    <MudTh>Details</MudTh>
-                                </HeaderContent>
-
-                                <RowTemplate Context="period">
-                                    <MudTd>@period.Name</MudTd>
-                                    <MudTd>@period.Temperature °@period.TemperatureUnit</MudTd>
-                                    <MudTd>@period.ShortForecast</MudTd>
-                                    <MudTd>@period.DetailedForecast</MudTd>
                                 </RowTemplate>
                             </MudTable>
                         }
@@ -171,14 +131,11 @@
 
     private List<ZoneFeature>? zones;
     private List<StationFeature>? stations;
-    private List<ForecastPeriod>? forecastPeriods;
 
     private string? selectedZoneId;
-    private string? selectedStationId;
 
     private bool isLoadingZones;
     private bool isLoadingStations;
-    private bool isLoadingForecast;
 
     private string? zonesError;
     private string? zonesEmpty;
@@ -186,23 +143,16 @@
     private string? stationsError;
     private string? stationsEmpty;
 
-    private string? forecastError;
-    private string? forecastEmpty;
-
     private async Task SearchZones()
     {
         zonesError = null;
         zonesEmpty = null;
         stationsError = null;
         stationsEmpty = null;
-        forecastError = null;
-        forecastEmpty = null;
 
         zones = null;
         stations = null;
         selectedZoneId = null;
-        forecastPeriods = null;
-        selectedStationId = null;
 
         if (string.IsNullOrWhiteSpace(stateInput) || stateInput.Trim().Length != 2)
         {
@@ -238,12 +188,8 @@
 
         stationsError = null;
         stationsEmpty = null;
-        forecastError = null;
-        forecastEmpty = null;
 
         stations = null;
-        forecastPeriods = null;
-        selectedStationId = null;
 
         isLoadingStations = true;
 
@@ -267,44 +213,12 @@
         }
     }
 
-    private async Task SelectStation(StationFeature station)
+    private void GoToForecastPage(StationFeature station)
     {
-        selectedStationId = station.Properties.StationIdentifier;
+        var longitude = station.Geometry.Coordinates[0].ToString(CultureInfo.InvariantCulture);
+        var latitude = station.Geometry.Coordinates[1].ToString(CultureInfo.InvariantCulture);
+        var stationId = Uri.EscapeDataString(station.Properties.StationIdentifier);
 
-        forecastError = null;
-        forecastEmpty = null;
-        forecastPeriods = null;
-
-        isLoadingForecast = true;
-
-        try
-        {
-            var longitude = station.Geometry.Coordinates[0];
-            var latitude = station.Geometry.Coordinates[1];
-
-            var pointData = await WeatherService.GetPointDataAsync(latitude, longitude);
-
-            if (string.IsNullOrWhiteSpace(pointData?.Properties.Forecast))
-            {
-                forecastEmpty = "No forecast endpoint was available for this station.";
-                return;
-            }
-
-            var forecast = await WeatherService.GetForecastAsync(pointData.Properties.Forecast);
-            forecastPeriods = forecast?.Properties.Periods;
-
-            if (forecastPeriods == null || forecastPeriods.Count == 0)
-            {
-                forecastEmpty = "No forecast periods were returned for this station.";
-            }
-        }
-        catch (Exception ex)
-        {
-            forecastError = $"Failed to load forecast. {ex.Message}";
-        }
-        finally
-        {
-            isLoadingForecast = false;
-        }
+        NavigationManager.NavigateTo($"/forecast/{latitude}/{longitude}/{stationId}");
     }
 }
