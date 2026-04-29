@@ -123,33 +123,33 @@ Example endpoints:
 
 ---
 
-### 3. API Integration (Time - ___)
+### 3. API Integration (Time - 30)
 - [x] Create `Services/WeatherService.cs`
 - [x] Register `HttpClient` in `Program.cs`
-- [ ] Add required NWS `User-Agent` header 
-- [ ] Create DTO/model classes for NWS responses
-- [ ] Fetch zones/stations by state
-- [ ] Fetch forecast data for selected entity
+- [x] Add required NWS `User-Agent` header 
+- [x] Create DTO/model classes for NWS responses
+- [x] Fetch zones/stations by state
+- [x] Fetch forecast data for selected entity
 - [ ] Handle API errors and edge cases
 
 ---
 
-### 4. Core App Workflow (Time - ___)
-- [ ] Add state input field
-- [ ] Trigger API call on search
-- [ ] Display zones/stations list
-- [ ] Handle selection of entity
-- [ ] Load forecast data
+### 4. Core App Workflow (Time - 30)
+- [x] Add state input field
+- [x] Trigger API call on search
+- [x] Display zones list
+- [x] Handle selection of zone
+- [x] Load stations dynamically under selected zone
 
 ---
 
 ### 5. Forecast Display (Time - ___)
-- [ ] Show forecast period (name/time)
-- [ ] Display temperature and units
-- [ ] Display short forecast
-- [ ] Display detailed forecast
-- [ ] Implement daily view
-- [ ] (Optional) Implement hourly view
+- [x] Show forecast period (name/time)
+- [x] Display temperature and units
+- [x] Display short forecast
+- [x] Display detailed forecast
+- [x] Implement daily view
+- [ ] Implement hourly view
 
 ---
 

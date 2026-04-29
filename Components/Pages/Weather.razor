@@ -51,7 +51,7 @@
         <ChildRowContent>
             @if (selectedZoneId == context.Properties.Id && stations is not null)
             {
-                <MudTd ColSpan="3">
+                <MudTd colSpan="3">
                     <MudPaper Class="pa-4 my-2" Elevation="0">
                         <MudText Typo="Typo.h6" Class="mb-2">
                             Stations for @context.Properties.Id
@@ -61,13 +61,43 @@
                             <HeaderContent>
                                 <MudTh>Station ID</MudTh>
                                 <MudTh>Name</MudTh>
+                                <MudTh>Action</MudTh>
                             </HeaderContent>
 
                             <RowTemplate Context="station">
                                 <MudTd>@station.Properties.StationIdentifier</MudTd>
                                 <MudTd>@station.Properties.Name</MudTd>
+                                <MudTd>
+                                    <MudButton Variant="Variant.Outlined"
+                                               Color="Color.Secondary"
+                                               OnClick="@(() => SelectStation(station))">
+                                        Forecast
+                                    </MudButton>
+                                </MudTd>
                             </RowTemplate>
                         </MudTable>
+                        @if (forecastPeriods is not null)
+                        {
+                            <MudText Typo="Typo.h6" Class="mt-4 mb-2">
+                                Forecast for @selectedStationId
+                            </MudText>
+
+                            <MudTable Items="forecastPeriods" Dense="true" Hover="true">
+                                <HeaderContent>
+                                    <MudTh>Period</MudTh>
+                                    <MudTh>Temperature</MudTh>
+                                    <MudTh>Short Forecast</MudTh>
+                                    <MudTh>Details</MudTh>
+                                </HeaderContent>
+
+                                <RowTemplate Context="period">
+                                    <MudTd>@period.Name</MudTd>
+                                    <MudTd>@period.Temperature °@period.TemperatureUnit</MudTd>
+                                    <MudTd>@period.ShortForecast</MudTd>
+                                    <MudTd>@period.DetailedForecast</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
                     </MudPaper>
                 </MudTd>
             }
@@ -80,15 +110,18 @@
     private List<ZoneFeature>? zones;
     private List<StationFeature>? stations;
     private string? selectedZoneId;
+    private List<ForecastPeriod>? forecastPeriods;
+    private string? selectedStationId;
 
     private async Task SearchZones()
     {
         var result = await WeatherService.GetForecastZonesByStateAsync(stateInput);
         zones = result?.Features;
 
-        // reset selection when new search happens
         stations = null;
         selectedZoneId = null;
+        forecastPeriods = null;
+        selectedStationId = null;
     }
 
     private async Task SelectZone(string zoneId)
@@ -97,5 +130,25 @@
 
         var result = await WeatherService.GetStationsByZoneAsync(zoneId);
         stations = result?.Features;
+    }
+
+    private async Task SelectStation(StationFeature station)
+    {
+        selectedStationId = station.Properties.StationIdentifier;
+
+        var longitude = station.Geometry.Coordinates[0];
+        var latitude = station.Geometry.Coordinates[1];
+
+        var pointData = await WeatherService.GetPointDataAsync(latitude, longitude);
+
+        if (string.IsNullOrWhiteSpace(pointData?.Properties.Forecast))
+        {
+            forecastPeriods = null;
+            return;
+        }
+
+        var forecast = await WeatherService.GetForecastAsync(pointData.Properties.Forecast);
+
+        forecastPeriods = forecast?.Properties.Periods;
     }
 }

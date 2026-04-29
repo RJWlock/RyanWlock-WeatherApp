@@ -25,6 +25,17 @@ public class WeatherService
             $"zones/forecast/{zoneId}/stations");
     }
 
+    public async Task<PointResponse?> GetPointDataAsync(double latitude, double longitude)
+    {
+        return await _httpClient.GetFromJsonAsync<PointResponse>(
+            $"points/{latitude},{longitude}");
+    }
+
+    public async Task<ForecastResponse?> GetForecastAsync(string forecastUrl)
+    {
+        return await _httpClient.GetFromJsonAsync<ForecastResponse>(forecastUrl);
+    }
+
 }
 
 //testing models TODO: move to models folder if successful
@@ -66,4 +77,35 @@ public class StationProperties
 public class StationGeometry
 {
     public List<double> Coordinates { get; set; } = [];
+}
+
+// Forecast models
+public class PointResponse
+{
+    public PointProperties Properties { get; set; } = new();
+}
+
+public class PointProperties
+{
+    public string Forecast { get; set; } = "";
+    public string ForecastHourly { get; set; } = "";
+}
+
+public class ForecastResponse
+{
+    public ForecastProperties Properties { get; set; } = new();
+}
+
+public class ForecastProperties
+{
+    public List<ForecastPeriod> Periods { get; set; } = [];
+}
+
+public class ForecastPeriod
+{
+    public string Name { get; set; } = "";
+    public int Temperature { get; set; }
+    public string TemperatureUnit { get; set; } = "";
+    public string ShortForecast { get; set; } = "";
+    public string DetailedForecast { get; set; } = "";
 }
