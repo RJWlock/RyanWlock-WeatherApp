@@ -169,12 +169,11 @@ Example endpoints:
 - [x] Confirm forecast renders correctly
 
 ### 7.5 UI Polish / Weather Dashboard (Time - 10)
-- [ ] Replace table-heavy layout with weather dashboard cards
-- [ ] Add current forecast summary card
-- [ ] Add selected state/zone/station header
-- [ ] Convert zone/station selection to dropdowns or cleaner cards
-- [ ] Add 7-day forecast cards
-- [ ] Add selected day behavior
+- [x] Replace table-heavy layout with weather dashboard cards
+- [x] Add current forecast summary card
+- [x] Add selected state/zone/station header
+- [x] Add 7-day forecast cards
+- [x] Add selected day behavior
 - [ ] Add hourly forecast section
 
 ---
