@@ -1,10 +1,18 @@
 using MudBlazor.Services;
 using CanAmWeatherApp.Components;
+using CanAmWeatherApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add MudBlazor services
 builder.Services.AddMudServices();
+
+// Add services to the container.
+builder.Services.AddHttpClient<WeatherService>(client =>
+{
+    client.BaseAddress = new Uri("https://api.weather.gov/");
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("CanAmWeatherApp/1.0");
+});
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

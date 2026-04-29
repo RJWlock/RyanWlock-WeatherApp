@@ -124,8 +124,8 @@ Example endpoints:
 ---
 
 ### 3. API Integration (Time - ___)
-- [ ] Create `Services/WeatherService.cs`
-- [ ] Register `HttpClient` in `Program.cs`
+- [x] Create `Services/WeatherService.cs`
+- [x] Register `HttpClient` in `Program.cs`
 - [ ] Add required NWS `User-Agent` header 
 - [ ] Create DTO/model classes for NWS responses
 - [ ] Fetch zones/stations by state

@@ -1,67 +1,101 @@
 @page "/weather"
 @rendermode InteractiveServer
 
-<MudPopoverProvider />
-<MudDialogProvider />
-<MudSnackbarProvider />
+@using CanAmWeatherApp.Services
+@inject WeatherService WeatherService
 
 <PageTitle>Weather</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Weather forecast</MudText>
-<MudText Typo="Typo.body1" Class="mb-8">This component demonstrates fetching data from the server.</MudText>
+<MudText Typo="Typo.h3" GutterBottom="true">
+    CanAm Weather App
+</MudText>
 
-@if (Forecasts == null)
+<MudText Typo="Typo.body1" Class="mb-4">
+    Enter a U.S. state abbreviation to load forecast zones.
+</MudText>
+
+<MudStack Row="true" Spacing="2" Class="mb-4">
+    <MudTextField @bind-Value="stateInput"
+                  Label="State"
+                  Placeholder="CO"
+                  Variant="Variant.Outlined" />
+
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               OnClick="SearchZones">
+        Search
+    </MudButton>
+</MudStack>
+
+@if (zones is not null)
 {
-    <MudProgressCircular Color="Color.Default" Indeterminate="true" />
-}
-else
-{
-  <MudTable Items="Forecasts" Hover="true" SortLabel="Sort By" Elevation="0" AllowUnsorted="false">
+    <MudTable Items="zones" Hover="true">
         <HeaderContent>
-            <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<WeatherForecast, object>(x=>x.Date)">Date</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<WeatherForecast, object>(x=>x.TemperatureC)">Temp. (C)</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<WeatherForecast, object>(x=>x.TemperatureF)">Temp. (F)</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<WeatherForecast, object>(x=>x.Summary!)">Summary</MudTableSortLabel></MudTh>
+            <MudTh>Zone ID</MudTh>
+            <MudTh>Name</MudTh>
+            <MudTh>Action</MudTh>
         </HeaderContent>
+
         <RowTemplate>
-            <MudTd DataLabel="Date">@context.Date</MudTd>
-            <MudTd DataLabel="Temp. (C)">@context.TemperatureC</MudTd>
-            <MudTd DataLabel="Temp. (F)">@context.TemperatureF</MudTd>
-            <MudTd DataLabel="Summary">@context.Summary</MudTd>
+            <MudTd DataLabel="Zone ID">@context.Properties.Id</MudTd>
+            <MudTd DataLabel="Name">@context.Properties.Name</MudTd>
+            <MudTd>
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           OnClick="() => SelectZone(context.Properties.Id)">
+                    Select
+                </MudButton>
+            </MudTd>
         </RowTemplate>
-        <PagerContent>
-            <MudTablePager PageSizeOptions="new int[]{50, 100}" />
-        </PagerContent>
+
+        <ChildRowContent>
+            @if (selectedZoneId == context.Properties.Id && stations is not null)
+            {
+                <MudTd ColSpan="3">
+                    <MudPaper Class="pa-4 my-2" Elevation="0">
+                        <MudText Typo="Typo.h6" Class="mb-2">
+                            Stations for @context.Properties.Id
+                        </MudText>
+
+                        <MudTable Items="stations" Dense="true" Hover="true">
+                            <HeaderContent>
+                                <MudTh>Station ID</MudTh>
+                                <MudTh>Name</MudTh>
+                            </HeaderContent>
+
+                            <RowTemplate Context="station">
+                                <MudTd>@station.Properties.StationIdentifier</MudTd>
+                                <MudTd>@station.Properties.Name</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudPaper>
+                </MudTd>
+            }
+        </ChildRowContent>
     </MudTable>
 }
 
 @code {
-    [PersistentState(AllowUpdates = true)]
-    public WeatherForecast[]? Forecasts { get; set; }
+    private string stateInput = "";
+    private List<ZoneFeature>? zones;
+    private List<StationFeature>? stations;
+    private string? selectedZoneId;
 
-    protected override async Task OnInitializedAsync()
+    private async Task SearchZones()
     {
-        if (Forecasts is null)
-        {
-            // Simulate asynchronous loading to demonstrate a loading indicator
-            await Task.Delay(500);
+        var result = await WeatherService.GetForecastZonesByStateAsync(stateInput);
+        zones = result?.Features;
 
-            var startDate = DateOnly.FromDateTime(DateTime.Now);
-            var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
-            Forecasts = Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = startDate.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = summaries[Random.Shared.Next(summaries.Length)]
-            }).ToArray();
-        }
+        // reset selection when new search happens
+        stations = null;
+        selectedZoneId = null;
     }
 
-    public class WeatherForecast
+    private async Task SelectZone(string zoneId)
     {
-        public DateOnly Date { get; set; }
-        public int TemperatureC { get; set; }
-        public string? Summary { get; set; }
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        selectedZoneId = zoneId;
+
+        var result = await WeatherService.GetStationsByZoneAsync(zoneId);
+        stations = result?.Features;
     }
 }
