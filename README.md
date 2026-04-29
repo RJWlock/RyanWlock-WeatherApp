@@ -123,7 +123,7 @@ Example endpoints:
 
 ---
 
-### 3. API Integration (Time - 30)
+### 3. API Integration (Time - 30min)
 - [x] Create `Services/WeatherService.cs`
 - [x] Register `HttpClient` in `Program.cs`
 - [x] Add required NWS `User-Agent` header 
@@ -134,7 +134,7 @@ Example endpoints:
 
 ---
 
-### 4. Core App Workflow (Time - 30)
+### 4. Core App Workflow (Time - 30min)
 - [x] Add state input field
 - [x] Trigger API call on search
 - [x] Display zones list
@@ -143,7 +143,7 @@ Example endpoints:
 
 ---
 
-### 5. Forecast Display (Time - 20)
+### 5. Forecast Display (Time - 20min)
 - [x] Show forecast period (name/time)
 - [x] Display temperature and units
 - [x] Display short forecast
@@ -153,7 +153,7 @@ Example endpoints:
 
 ---
 
-### 6. UI Polish (Time - 30)
+### 6. UI Polish (Time - 30min)
 - [x] Add loading indicators
 - [x] Add input validation
 - [x] Add error handling UI
@@ -162,13 +162,13 @@ Example endpoints:
 
 ---
 
-### 7. Manual Testing & Validation (Time - 10)
+### 7. Manual Testing & Validation (Time - 10min)
 - [x] Test with multiple states (CO, TX, CA)
 - [x] Test invalid inputs
 - [x] Verify API failure handling
 - [x] Confirm forecast renders correctly
 
-### 7.5 UI Polish / Weather Dashboard (Time - 10)
+### 7.5 UI Polish / Weather Dashboard (Time - 70min)
 - [x] Replace table-heavy layout with weather dashboard cards
 - [x] Add current forecast summary card
 - [x] Add selected state/zone/station header
