@@ -130,7 +130,7 @@ Example endpoints:
 - [x] Create DTO/model classes for NWS responses
 - [x] Fetch zones/stations by state
 - [x] Fetch forecast data for selected entity
-- [ ] Handle API errors and edge cases
+- [x] Handle API errors and edge cases
 
 ---
 
@@ -143,30 +143,30 @@ Example endpoints:
 
 ---
 
-### 5. Forecast Display (Time - ___)
+### 5. Forecast Display (Time - 20 + x )
 - [x] Show forecast period (name/time)
 - [x] Display temperature and units
 - [x] Display short forecast
 - [x] Display detailed forecast
 - [x] Implement daily view
-- [ ] Implement hourly view
+- [ ] Implement hourly view ( x )
 
 ---
 
-### 6. UI Polish (Time - ___)
-- [ ] Add loading indicators
-- [ ] Add input validation
-- [ ] Add error handling UI
-- [ ] Add empty-state messaging
-- [ ] Improve layout with MudBlazor components
+### 6. UI Polish (Time - 30)
+- [x] Add loading indicators
+- [x] Add input validation
+- [x] Add error handling UI
+- [x] Add empty-state messaging
+- [x] Improve layout with MudBlazor components
 
 ---
 
-### 7. Testing & Validation (Time - ___)
-- [ ] Test with multiple states (CO, TX, CA)
-- [ ] Test invalid inputs
-- [ ] Verify API failure handling
-- [ ] Confirm forecast renders correctly
+### 7. Manual Testing & Validation (Time - 10)
+- [x] Test with multiple states (CO, TX, CA)
+- [x] Test invalid inputs
+- [x] Verify API failure handling
+- [x] Confirm forecast renders correctly
 
 ---
 

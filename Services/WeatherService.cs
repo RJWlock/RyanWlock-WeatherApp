@@ -11,34 +11,57 @@ public class WeatherService
         _httpClient = httpClient;
     }
 
-    public async Task<ZoneResponse?> GetForecastZonesByStateAsync(string state)
+    // Generic API handler (centralized error handling)
+    private async Task<T> GetFromApiAsync<T>(string url)
+    {
+        var response = await _httpClient.GetAsync(url);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception(
+                $"NWS API request failed: {(int)response.StatusCode} {response.ReasonPhrase}");
+        }
+
+        var data = await response.Content.ReadFromJsonAsync<T>();
+
+        if (data == null)
+        {
+            throw new Exception("NWS API returned empty or invalid data.");
+        }
+
+        return data;
+    }
+
+    public async Task<ZoneResponse> GetForecastZonesByStateAsync(string state)
     {
         state = state.Trim().ToUpper();
 
-        return await _httpClient.GetFromJsonAsync<ZoneResponse>(
+        return await GetFromApiAsync<ZoneResponse>(
             $"zones/forecast?area={state}");
     }
 
-    public async Task<StationResponse?> GetStationsByZoneAsync(string zoneId)
+    public async Task<StationResponse> GetStationsByZoneAsync(string zoneId)
     {
-        return await _httpClient.GetFromJsonAsync<StationResponse>(
+        return await GetFromApiAsync<StationResponse>(
             $"zones/forecast/{zoneId}/stations");
     }
 
-    public async Task<PointResponse?> GetPointDataAsync(double latitude, double longitude)
+    public async Task<PointResponse> GetPointDataAsync(double latitude, double longitude)
     {
-        return await _httpClient.GetFromJsonAsync<PointResponse>(
+        return await GetFromApiAsync<PointResponse>(
             $"points/{latitude},{longitude}");
     }
 
-    public async Task<ForecastResponse?> GetForecastAsync(string forecastUrl)
+    public async Task<ForecastResponse> GetForecastAsync(string forecastUrl)
     {
-        return await _httpClient.GetFromJsonAsync<ForecastResponse>(forecastUrl);
+        return await GetFromApiAsync<ForecastResponse>(forecastUrl);
     }
-
 }
 
-//testing models TODO: move to models folder if successful
+
+// ==========================
+// MODELS
+// ==========================
 
 public class ZoneResponse
 {
@@ -56,7 +79,7 @@ public class ZoneProperties
     public string Name { get; set; } = "";
 }
 
-// Station response modelS
+// Station models
 public class StationResponse
 {
     public List<StationFeature> Features { get; set; } = [];
