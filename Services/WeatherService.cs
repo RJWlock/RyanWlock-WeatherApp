@@ -56,6 +56,11 @@ public class WeatherService
     {
         return await GetFromApiAsync<ForecastResponse>(forecastUrl);
     }
+
+    public async Task<ForecastResponse> GetHourlyForecastAsync(string hourlyForecastUrl)
+    {
+        return await GetFromApiAsync<ForecastResponse>(hourlyForecastUrl);
+    }
 }
 
 
@@ -127,8 +132,12 @@ public class ForecastProperties
 public class ForecastPeriod
 {
     public string Name { get; set; } = "";
+    public DateTimeOffset? StartTime { get; set; }
+    public DateTimeOffset? EndTime { get; set; }
     public int Temperature { get; set; }
     public string TemperatureUnit { get; set; } = "";
     public string ShortForecast { get; set; } = "";
     public string DetailedForecast { get; set; } = "";
+    public string WindSpeed { get; set; } = "";
+    public string WindDirection { get; set; } = "";
 }

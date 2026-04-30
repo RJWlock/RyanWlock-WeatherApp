@@ -117,6 +117,40 @@
                 </MudItem>
             }
         </MudGrid>
+
+        @if (hourlyForecastPeriods is not null && hourlyForecastPeriods.Count > 0)
+        {
+            <MudText Typo="Typo.h5" Class="mt-6 mb-3">
+                Next 24 Hours
+            </MudText>
+
+            <MudPaper Class="pa-4 rounded-xl hourly-section" Elevation="3">
+                <MudGrid>
+                    @foreach (var hour in hourlyForecastPeriods)
+                    {
+                        <MudItem xs="6" sm="4" md="2">
+                            <MudPaper Class="pa-3 rounded-xl hourly-card" Elevation="0">
+                                <MudText Typo="Typo.subtitle2">
+                                    @FormatHour(hour.StartTime)
+                                </MudText>
+
+                                <MudText Class="hourly-weather-icon my-1">
+                                    @GetWeatherIcon(hour.ShortForecast)
+                                </MudText>
+
+                                <MudText Typo="Typo.h6">
+                                    @hour.Temperature°@hour.TemperatureUnit
+                                </MudText>
+
+                                <MudText Typo="Typo.caption">
+                                    @hour.ShortForecast
+                                </MudText>
+                            </MudPaper>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudPaper>
+        }
     }
 
 </MudContainer>
@@ -147,6 +181,22 @@
         font-size: 42px;
         text-align: center;
     }
+
+    .hourly-section {
+        background-color: #102b40;
+        color: white;
+    }
+
+    .hourly-card {
+        background-color: rgba(255, 255, 255, 0.08);
+        color: white;
+        min-height: 160px;
+    }
+
+    .hourly-weather-icon {
+        font-size: 32px;
+        text-align: center;
+    }
 </style>
 
 @code {
@@ -155,6 +205,7 @@
     [Parameter] public string? StationId { get; set; }
 
     private List<ForecastPeriod>? forecastPeriods;
+    private List<ForecastPeriod>? hourlyForecastPeriods;
 
     private bool isLoadingForecast;
     private string? forecastError;
@@ -189,6 +240,12 @@
             var forecast = await WeatherService.GetForecastAsync(pointData.Properties.Forecast);
             forecastPeriods = forecast.Properties.Periods;
 
+            if (!string.IsNullOrWhiteSpace(pointData.Properties.ForecastHourly))
+            {
+                var hourlyForecast = await WeatherService.GetHourlyForecastAsync(pointData.Properties.ForecastHourly);
+                hourlyForecastPeriods = hourlyForecast.Properties.Periods.Take(24).ToList();
+            }
+
             if (forecastPeriods.Count == 0)
             {
                 forecastEmpty = "No forecast periods were returned for this station.";
@@ -202,6 +259,14 @@
         {
             isLoadingForecast = false;
         }
+    }
+
+    private string FormatHour(DateTimeOffset? startTime)
+    {
+        if (startTime is null)
+            return "N/A";
+
+        return startTime.Value.ToLocalTime().ToString("h tt");
     }
 
     private string GetWeatherIcon(string forecast)
