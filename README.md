@@ -104,12 +104,12 @@ Example endpoints:
 
 ## Development Plan & Progress Notes
 
-### 1. Planning & Research (Time - 0.5 hour)
+### 1. Planning & Research (Time - 30min)
 - [x] Review project requirements
 - [x] Decide on app flow (Search: state -> Return: zones/stations -> Select/Display: forecast)
 - [x] Outline basic architecture (Blazor UI + WeatherService)
 
-### 1.5 Project Setup (Time - 0.5 hour)
+### 1.5 Project Setup (Time - 30min)
 - [x] Create Blazor app scaffold
 - [x] Add MudBlazor
 - [x] Create `.gitignore` / `README.md`
@@ -118,7 +118,7 @@ Example endpoints:
 
 ---
 
-### 2 API Testing and Planning (Time - 2 hours)
+### 2 API Testing and Planning (Time - 120min)
 - [x] Explore National Weather Service API documentation
 - [x] Identify relevant endpoints:
   - `/zones/forecast?area={state}`
@@ -217,6 +217,4 @@ Example endpoints:
 
 --- 
 
-### TOTAL TIME SPENT - ___
-
-- testing
+### TOTAL TIME SPENT - 8 hours (480min)
