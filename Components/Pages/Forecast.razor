@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 
 @using CanAmWeatherApp.Services
+@using CanAmWeatherApp.Models 
 @using System.Globalization
 @inject WeatherService WeatherService
 @inject NavigationManager NavigationManager
@@ -43,7 +44,7 @@
         var selectedHourly = GetSelectedDayHourlyPeriods().ToList();
 
         <MudPaper Class="pa-5 mb-5 rounded-xl weather-dashboard" Elevation="4">
-            <MudGrid AlignItems="AlignItems.Center" Class="mb-5">
+            <MudGrid align-items="AlignItems.Center" Class="mb-5">
                 <MudItem xs="12" md="6">
                     <MudText Typo="Typo.h5" Class="location-title">
                         @StationId
@@ -57,11 +58,22 @@
                 </MudItem>
             </MudGrid>
 
-            <MudGrid AlignItems="AlignItems.Center" Class="mb-5">
+            <MudGrid align-items="AlignItems.Center" Class="mb-5">
                 <MudItem xs="12" md="6">
                     <div class="current-summary">
                         <div class="big-icon">@GetWeatherIcon(current.ShortForecast)</div>
-                        <div class="current-temp">@current.Temperature°</div>
+                        <div class="temp-row">
+                            <div class="current-temp">
+                                @selectedPeriod.Temperature°
+                            </div>
+
+                            @if (GetLowForCurrentPeriod() is not null)
+                            {
+                                <div class="current-low">
+                                    @GetLowForCurrentPeriod()°
+                                </div>
+                            }
+                        </div>
                         <div class="unit-text">@current.TemperatureUnit</div>
                     </div>
                 </MudItem>
@@ -277,156 +289,16 @@
             font-size: 64px;
         }
     }
+    .temp-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+    }
+
+    .current-low {
+        font-size: 32px;
+        font-weight: 400;
+        color: rgba(255,255,255,.45);
+        padding-bottom: 10px;
+    }
 </style>
-
-@code {
-    [Parameter] public string? Latitude { get; set; }
-    [Parameter] public string? Longitude { get; set; }
-    [Parameter] public string? StationId { get; set; }
-
-    private List<ForecastPeriod>? forecastPeriods;
-    private List<ForecastPeriod>? hourlyForecastPeriods;
-    private ForecastPeriod? selectedPeriod;
-
-    private bool showAllHourly;
-    private bool isLoadingForecast;
-    private string? forecastError;
-    private string? forecastEmpty;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadForecast();
-    }
-
-    private async Task LoadForecast()
-    {
-        if (!double.TryParse(Latitude, CultureInfo.InvariantCulture, out var latitude) ||
-            !double.TryParse(Longitude, CultureInfo.InvariantCulture, out var longitude))
-        {
-            forecastError = "Invalid station coordinates.";
-            return;
-        }
-
-        isLoadingForecast = true;
-
-        try
-        {
-            var pointData = await WeatherService.GetPointDataAsync(latitude, longitude);
-
-            if (string.IsNullOrWhiteSpace(pointData.Properties.Forecast))
-            {
-                forecastEmpty = "No forecast endpoint was available for this station.";
-                return;
-            }
-
-            var forecast = await WeatherService.GetForecastAsync(pointData.Properties.Forecast);
-            forecastPeriods = forecast.Properties.Periods;
-            selectedPeriod = forecastPeriods.FirstOrDefault();
-
-            if (!string.IsNullOrWhiteSpace(pointData.Properties.ForecastHourly))
-            {
-                var hourlyForecast = await WeatherService.GetHourlyForecastAsync(pointData.Properties.ForecastHourly);
-                hourlyForecastPeriods = hourlyForecast.Properties.Periods;
-            }
-
-            if (forecastPeriods.Count == 0)
-            {
-                forecastEmpty = "No forecast periods were returned for this station.";
-            }
-        }
-        catch (Exception ex)
-        {
-            forecastError = $"Failed to load forecast. {ex.Message}";
-        }
-        finally
-        {
-            isLoadingForecast = false;
-        }
-    }
-
-    private void SelectPeriod(ForecastPeriod period)
-    {
-        selectedPeriod = period;
-        showAllHourly = false;
-    }
-
-    private void ToggleHourlyCards()
-    {
-        showAllHourly = !showAllHourly;
-    }
-
-    private IEnumerable<DailyCard> GetDailyCards()
-    {
-        if (forecastPeriods is null)
-            yield break;
-
-        for (var i = 0; i < forecastPeriods.Count; i++)
-        {
-            var period = forecastPeriods[i];
-
-            if (period.Name.Contains("night", StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            int? low = null;
-            var nextPeriod = forecastPeriods.ElementAtOrDefault(i + 1);
-
-            if (nextPeriod is not null && nextPeriod.Name.Contains("night", StringComparison.OrdinalIgnoreCase))
-                low = nextPeriod.Temperature;
-
-            yield return new DailyCard(period, low);
-        }
-    }
-
-    private IEnumerable<ForecastPeriod> GetSelectedDayHourlyPeriods()
-    {
-        if (hourlyForecastPeriods is null || selectedPeriod is null)
-            return [];
-
-        var selectedDate = selectedPeriod.StartTime.Date;
-
-        return hourlyForecastPeriods
-            .Where(period => period.StartTime.Date == selectedDate)
-            .Take(24);
-    }
-
-    private string GetDailyCardClass(ForecastPeriod period)
-    {
-        var selectedClass = selectedPeriod == period ? " daily-card-selected" : "";
-        return $"daily-card{selectedClass}";
-    }
-
-    private string GetDayLabel(ForecastPeriod period)
-    {
-        if (period.StartTime != default)
-            return period.StartTime.ToString("ddd", CultureInfo.InvariantCulture);
-
-        return period.Name;
-    }
-
-    private string GetWeatherIcon(string forecast)
-    {
-        forecast = forecast.ToLower();
-
-        if (forecast.Contains("sun") || forecast.Contains("clear"))
-            return "☀️";
-
-        if (forecast.Contains("cloud"))
-            return "☁️";
-
-        if (forecast.Contains("rain") || forecast.Contains("shower"))
-            return "🌧️";
-
-        if (forecast.Contains("snow"))
-            return "❄️";
-
-        if (forecast.Contains("storm") || forecast.Contains("thunder"))
-            return "⛈️";
-
-        if (forecast.Contains("fog"))
-            return "🌫️";
-
-        return "🌤️";
-    }
-
-    private record DailyCard(ForecastPeriod Period, int? LowTemperature);
-}

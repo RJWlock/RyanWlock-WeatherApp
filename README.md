@@ -23,10 +23,27 @@ The app allows users to:
 
 ## Features (Planned / In Progress)
 
-* [ ] Country_State lookup of weather zones/stations
-* [ ] Selection of a specific zone or station
-* [ ] Display of forecast data (temperature highs/lows, hourly/daily)
-* [ ] Clean, responsive UI using MudBlazor
+* [x] Country_State lookup of weather zones/stations
+* [x] Selection of a specific zone or station
+* [x] Display of forecast data (temperature highs/lows, hourly/daily)
+* [x] Clean, responsive UI using MudBlazor
+
+---
+
+## App Flow
+
+1. User opens the app and clicks **Weather** in the navigation header.
+2. User enters a U.S. state abbreviation, such as `CO`, `TX`, or `CA`.
+3. App retrieves forecast zones for that state.
+4. User selects a forecast zone.
+5. App retrieves stations inside the selected zone.
+6. User selects a station.
+7. App extracts the station coordinates.
+8. App calls the NWS `/points/{latitude},{longitude}` endpoint.
+9. App uses the returned forecast URLs to retrieve:
+   - Daily / period forecast
+   - Hourly forecast
+10. App displays the forecast dashboard.
 
 ---
 
@@ -174,7 +191,7 @@ Example endpoints:
 - [x] Add selected state/zone/station header
 - [x] Add 7-day forecast cards
 - [x] Add selected day behavior
-- [ ] Add hourly forecast section
+- [x] Add hourly forecast section
 
 ---
 

@@ -1,15 +1,10 @@
 @page "/weather"
 @rendermode InteractiveServer
 
-@using CanAmWeatherApp.Services
-@using System.Globalization
-@inject WeatherService WeatherService
-@inject NavigationManager NavigationManager
-
 <PageTitle>Weather</PageTitle>
 
 <MudText Typo="Typo.h3" GutterBottom="true">
-    CanAm Weather App
+    Weather Search
 </MudText>
 
 <MudText Typo="Typo.body1" Class="mb-4">
@@ -50,7 +45,10 @@
 
 @if (zones is not null)
 {
-    <MudTable Items="zones" Hover="true">
+    <MudTable Items="zones"
+              Hover="true"
+              Dense="true"
+              RowsPerPage="10">
         <HeaderContent>
             <MudTh>Zone ID</MudTh>
             <MudTh>Name</MudTh>
@@ -63,7 +61,7 @@
             <MudTd>
                 <MudButton Variant="Variant.Outlined"
                            Color="Color.Primary"
-                           OnClick="@(() => SelectZone(context.Properties.Id))">
+                           OnClick="@(() => SelectZone(context))">
                     Select
                 </MudButton>
             </MudTd>
@@ -75,7 +73,7 @@
                 <MudTd colSpan="3">
                     <MudPaper Class="pa-4 my-2" Elevation="0">
                         <MudText Typo="Typo.h6" Class="mb-2">
-                            Stations for @context.Properties.Id
+                            Stations for @context.Properties.Name
                         </MudText>
 
                         @if (isLoadingStations)
@@ -124,101 +122,4 @@
             }
         </ChildRowContent>
     </MudTable>
-}
-
-@code {
-    private string stateInput = "";
-
-    private List<ZoneFeature>? zones;
-    private List<StationFeature>? stations;
-
-    private string? selectedZoneId;
-
-    private bool isLoadingZones;
-    private bool isLoadingStations;
-
-    private string? zonesError;
-    private string? zonesEmpty;
-
-    private string? stationsError;
-    private string? stationsEmpty;
-
-    private async Task SearchZones()
-    {
-        zonesError = null;
-        zonesEmpty = null;
-        stationsError = null;
-        stationsEmpty = null;
-
-        zones = null;
-        stations = null;
-        selectedZoneId = null;
-
-        if (string.IsNullOrWhiteSpace(stateInput) || stateInput.Trim().Length != 2)
-        {
-            zonesError = "Please enter a valid 2-letter state code, such as CO, TX, or CA.";
-            return;
-        }
-
-        isLoadingZones = true;
-
-        try
-        {
-            var result = await WeatherService.GetForecastZonesByStateAsync(stateInput.Trim().ToUpper());
-            zones = result?.Features;
-
-            if (zones == null || zones.Count == 0)
-            {
-                zonesEmpty = $"No forecast zones found for '{stateInput}'.";
-            }
-        }
-        catch (Exception ex)
-        {
-            zonesError = $"Could not load zones. {ex.Message}";
-        }
-        finally
-        {
-            isLoadingZones = false;
-        }
-    }
-
-    private async Task SelectZone(string zoneId)
-    {
-        selectedZoneId = zoneId;
-
-        stationsError = null;
-        stationsEmpty = null;
-
-        stations = null;
-
-        isLoadingStations = true;
-
-        try
-        {
-            var result = await WeatherService.GetStationsByZoneAsync(zoneId);
-            stations = result?.Features;
-
-            if (stations == null || stations.Count == 0)
-            {
-                stationsEmpty = "No stations found for this zone.";
-            }
-        }
-        catch (Exception ex)
-        {
-            stationsError = $"Failed to load stations. {ex.Message}";
-        }
-        finally
-        {
-            isLoadingStations = false;
-        }
-    }
-
-    private void GoToForecastPage(StationFeature station)
-    {
-        var longitude = station.Geometry.Coordinates[0].ToString(CultureInfo.InvariantCulture);
-        var latitude = station.Geometry.Coordinates[1].ToString(CultureInfo.InvariantCulture);
-        var stationId = Uri.EscapeDataString(station.Properties.StationIdentifier);
-
-        NavigationManager.NavigateTo($"/forecast/{latitude}/{longitude}/{stationId}");
-    }
 }
