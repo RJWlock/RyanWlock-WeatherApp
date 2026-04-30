@@ -53,10 +53,10 @@ The app allows users to:
 
 ## Project Structure
 
-* `Components/Pages/` – Razor pages, code-behind files, and isolated CSS
-* `Models/` – NWS API DTOs
-* `Services/` – API integration logic (`WeatherService`)
-* `Program.cs` – Application startup and dependency injection
+* `Components/Pages/` â€“ Razor pages, code-behind files, and isolated CSS
+* `Models/` â€“ NWS API DTOs
+* `Services/` â€“ API integration logic (`WeatherService`)
+* `Program.cs` â€“ Application startup and dependency injection
 
 ---
 
@@ -64,7 +64,7 @@ The app allows users to:
 
 ### Prerequisites
 
-* .NET 8 SDK (or compatible)
+* .NET 10 SDK (or compatible)
 * Internet connection (for NWS API access)
 
 ### Run the App
