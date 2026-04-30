@@ -9,6 +9,7 @@ public partial class Weather
 {
     [Inject] private WeatherService WeatherService { get; set; } = default!;
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] private ILogger<Weather> Logger { get; set; } = default!;
 
     private string stateInput = "";
 
@@ -39,9 +40,11 @@ public partial class Weather
         selectedZoneId = null;
         selectedZone = null;
 
-        if (string.IsNullOrWhiteSpace(stateInput) || stateInput.Trim().Length != 2)
+        var stateCode = stateInput.Trim().ToUpperInvariant();
+
+        if (stateCode.Length != 2 || !stateCode.All(char.IsLetter))
         {
-            zonesError = "Please enter a valid 2-letter state code, such as CO, TX, or CA.";
+            zonesError = "Please enter a valid 2-letter U.S. state code, such as CO, TX, or CA.";
             return;
         }
 
@@ -49,17 +52,19 @@ public partial class Weather
 
         try
         {
-            var result = await WeatherService.GetForecastZonesByStateAsync(stateInput.Trim().ToUpper());
+            var result = await WeatherService.GetForecastZonesByStateAsync(stateCode);
             zones = result?.Features;
 
             if (zones == null || zones.Count == 0)
             {
-                zonesEmpty = $"No forecast zones found for '{stateInput}'.";
+                zonesEmpty = $"No forecast zones found for '{stateCode}'.";
             }
         }
         catch (Exception ex)
         {
-            zonesError = $"Could not load zones. {ex.Message}";
+            Logger.LogError(ex, "Failed to load forecast zones for state input {StateInput}", stateInput);
+
+            zonesError = "We could not load forecast zones for that state. Please check the state abbreviation and try again.";
         }
         finally
         {
@@ -90,7 +95,9 @@ public partial class Weather
         }
         catch (Exception ex)
         {
-            stationsError = $"Failed to load stations. {ex.Message}";
+            Logger.LogError(ex, "Failed to load stations for zone {ZoneId}", selectedZoneId);
+
+            stationsError = "We could not load stations for this zone. Please try another zone or search again.";
         }
         finally
         {
