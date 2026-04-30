@@ -95,10 +95,10 @@ Example endpoints:
 
 ## Future Improvements
 
-* Error handling and loading states
 * Better entity filtering (zones vs stations)
 * Caching API responses
 * Unit tests for service layer
+* More Options and stats on weather
 
 ---
 
