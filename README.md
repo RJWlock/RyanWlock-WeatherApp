@@ -214,7 +214,8 @@ Example endpoints:
 - [x] Clean up unused files and scaffolded components
 - [x] Manually test final version across desktop and mobile layouts
 
+### 8.2 Final Cleanup (Time - 60min)
+- [x] Found bug that was allowing the user to search Territories containing 50 states and returning no stations. Added validation to prevent this and display an error message instead.
+- [x] Fixed bug night time icon showing day emoji
 
---- 
-
-### TOTAL TIME SPENT - 8 hours (480min)
+### TOTAL TIME SPENT - 9 hours (540min)

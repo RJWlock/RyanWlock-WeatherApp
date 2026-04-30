@@ -61,10 +61,10 @@
             <MudGrid align-items="AlignItems.Center" Class="mb-5">
                 <MudItem xs="12" md="6">
                     <div class="current-summary">
-                        <div class="big-icon">@GetWeatherIcon(current.ShortForecast)</div>
+                        <div class="big-icon">@GetWeatherIcon(current)</div>
                         <div class="temp-row">
                             <div class="current-temp">
-                                @selectedPeriod.Temperature°
+                                @current.Temperature°
                             </div>
 
                             @if (GetLowForCurrentPeriod() is not null)
@@ -104,7 +104,20 @@
                             <MudText Typo="Typo.subtitle2" Class="hourly-time">
                                 @hour.StartTime.ToString("h tt", CultureInfo.InvariantCulture).ToLower().Replace(" ", "")
                             </MudText>
-                            <MudText Class="hourly-icon">@GetWeatherIcon(hour.ShortForecast)</MudText>
+                            <div class="hourly-icon">
+                                @if (!hour.IsDaytime &&
+                                    hour.ShortForecast.Contains("Cloud", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <div class="moon-cloud-icon">
+                                        <span class="moon">🌙</span>
+                                        <span class="cloud">☁️</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    @GetWeatherIcon(hour)
+                                }
+                            </div>
                             <MudText Typo="Typo.h6">@hour.Temperature°</MudText>
                             <MudText Typo="Typo.caption" Class="muted-text hourly-summary">
                                 @hour.ShortForecast
@@ -134,7 +147,7 @@
                               Elevation="0"
                               @onclick="@(() => SelectPeriod(card.Period))">
                         <MudText Typo="Typo.h6">@GetDayLabel(card.Period)</MudText>
-                        <MudText Class="small-weather-icon my-2">@GetWeatherIcon(card.Period.ShortForecast)</MudText>
+                        <MudText Class="small-weather-icon my-2">@GetWeatherIcon(card.Period)</MudText>
                         <MudText Typo="Typo.h6">
                             @card.Period.Temperature°
                             @if (card.LowTemperature is not null)
@@ -300,5 +313,28 @@
         font-weight: 400;
         color: rgba(255,255,255,.45);
         padding-bottom: 10px;
+    }
+
+    .moon-cloud-icon {
+        position: relative;
+        width: 42px;
+        height: 42px;
+        margin: 0 auto;
+    }
+
+    .moon {
+        position: absolute;
+        left: 4px;
+        top: 2px;
+        font-size: 26px;
+        z-index: 1;
+    }
+
+    .cloud {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        font-size: 24px;
+        z-index: 2;
     }
 </style>

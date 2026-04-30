@@ -44,7 +44,13 @@ public partial class Weather
 
         if (stateCode.Length != 2 || !stateCode.All(char.IsLetter))
         {
-            zonesError = "Please enter a valid 2-letter U.S. state code, such as CO, TX, or CA.";
+            zonesError = "Please enter a valid 2-letter U.S. state abbreviation, such as CO, TX, or CA.";
+            return;
+        }
+
+        if (!ValidStates.Contains(stateCode))
+        {
+            zonesError = "Please enter one of the 50 U.S. state abbreviations. Territories are not supported.";
             return;
         }
 
@@ -62,9 +68,13 @@ public partial class Weather
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to load forecast zones for state input {StateInput}", stateInput);
+            Logger.LogError(
+                ex,
+                "Failed to load forecast zones for state input {StateInput}",
+                stateInput);
 
-            zonesError = "We could not load forecast zones for that state. Please check the state abbreviation and try again.";
+            zonesError =
+                "We could not load forecast zones for that state. Please check the state abbreviation and try again.";
         }
         finally
         {
@@ -115,4 +125,15 @@ public partial class Weather
 
         NavigationManager.NavigateTo($"/forecast/{latitude}/{longitude}/{zoneName}");
     }
+
+    private static readonly HashSet<string> ValidStates = new()
+    {
+        "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA",
+        "HI","ID","IL","IN","IA","KS","KY","LA","ME","MD",
+        "MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
+        "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
+        "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"
+    };
+
+
 }

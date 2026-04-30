@@ -77,6 +77,7 @@
         public string WindDirection { get; set; } = "";
         public string ShortForecast { get; set; } = "";
         public string DetailedForecast { get; set; } = "";
+        public bool IsDaytime { get; set; }
     }
 
 }

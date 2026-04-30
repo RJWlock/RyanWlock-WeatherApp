@@ -179,17 +179,21 @@ public partial class Forecast
         return null;
     }
 
-    private string GetWeatherIcon(
-        string forecast)
+    private string GetWeatherIcon(ForecastPeriod period)
     {
-        forecast = forecast.ToLower();
+        var forecast =
+            period.ShortForecast.ToLowerInvariant();
 
         if (forecast.Contains("sun") ||
             forecast.Contains("clear"))
-            return "☀️";
+        {
+            return period.IsDaytime
+                ? "☀️"
+                : "🌙";
+        }
 
-        if (forecast.Contains("cloud"))
-            return "☁️";
+        if (forecast.Contains("storm"))
+            return "⛈️";
 
         if (forecast.Contains("rain"))
             return "🌧️";
@@ -197,13 +201,27 @@ public partial class Forecast
         if (forecast.Contains("snow"))
             return "❄️";
 
-        if (forecast.Contains("storm"))
-            return "⛈️";
-
         if (forecast.Contains("fog"))
             return "🌫️";
 
-        return "🌤️";
+        if (forecast.Contains("cloud"))
+        {
+            return period.IsDaytime
+                ? "☁️"
+                : "🌙☁️";
+        }
+
+        if (forecast.Contains("sun") ||
+            forecast.Contains("clear"))
+        {
+            return period.IsDaytime
+                ? "☀️"
+                : "🌙";
+        }
+
+        return period.IsDaytime
+            ? "🌤️"
+            : "🌙";
     }
 
     private record DailyCard(
