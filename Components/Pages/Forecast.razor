@@ -38,164 +38,244 @@
 
     @if (forecastPeriods is not null && forecastPeriods.Count > 0)
     {
-        var current = forecastPeriods.First();
-        var upcoming = forecastPeriods.Skip(1).Take(7).ToList();
+        var current = selectedPeriod ?? forecastPeriods.First();
+        var dailyCards = GetDailyCards().ToList();
+        var selectedHourly = GetSelectedDayHourlyPeriods().ToList();
 
-        <MudPaper Class="pa-5 mb-5 rounded-xl forecast-hero" Elevation="4">
-            <MudText Typo="Typo.h4" Class="mb-1">
-                @StationId
-            </MudText>
-
-            <MudText Typo="Typo.body2" Class="mb-4">
-                Current forecast
-            </MudText>
-
-            <MudGrid AlignItems="Center">
+        <MudPaper Class="pa-5 mb-5 rounded-xl weather-dashboard" Elevation="4">
+            <MudGrid AlignItems="AlignItems.Center" Class="mb-5">
                 <MudItem xs="12" md="6">
-                    <MudPaper Class="pa-5 rounded-xl current-card" Elevation="0">
-                        <MudGrid AlignItems="Center">
-                            <MudItem xs="4">
-                                <MudText Class="weather-icon">
-                                    @GetWeatherIcon(current.ShortForecast)
-                                </MudText>
-                            </MudItem>
-
-                            <MudItem xs="8">
-                                <MudText Typo="Typo.h2">
-                                    @current.Temperature°@current.TemperatureUnit
-                                </MudText>
-
-                                <MudText Typo="Typo.h6">
-                                    @current.ShortForecast
-                                </MudText>
-
-                                <MudText Typo="Typo.body2">
-                                    @current.Name
-                                </MudText>
-                            </MudItem>
-                        </MudGrid>
-                    </MudPaper>
+                    <MudText Typo="Typo.h5" Class="location-title">
+                        @StationId
+                    </MudText>
                 </MudItem>
 
-                <MudItem xs="12" md="6">
-                    <MudText Typo="Typo.h6" Class="mb-2">
-                        Details
-                    </MudText>
-
-                    <MudText Typo="Typo.body1">
-                        @current.DetailedForecast
-                    </MudText>
+                <MudItem xs="12" md="6" Class="weather-header">
+                    <MudText Typo="Typo.h3">Weather</MudText>
+                    <MudText Typo="Typo.h5" Class="muted-text">@current.Name</MudText>
+                    <MudText Typo="Typo.h6" Class="muted-text">@current.ShortForecast</MudText>
                 </MudItem>
             </MudGrid>
-        </MudPaper>
 
-        <MudText Typo="Typo.h5" Class="mb-3">
-            7 Period Forecast
-        </MudText>
+            <MudGrid AlignItems="AlignItems.Center" Class="mb-5">
+                <MudItem xs="12" md="6">
+                    <div class="current-summary">
+                        <div class="big-icon">@GetWeatherIcon(current.ShortForecast)</div>
+                        <div class="current-temp">@current.Temperature°</div>
+                        <div class="unit-text">@current.TemperatureUnit</div>
+                    </div>
+                </MudItem>
 
-        <MudGrid>
-            @foreach (var period in upcoming)
-            {
-                <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Class="pa-4 rounded-xl forecast-card" Elevation="3">
-                        <MudText Typo="Typo.h6">
-                            @period.Name
-                        </MudText>
-
-                        <MudText Class="small-weather-icon my-2">
-                            @GetWeatherIcon(period.ShortForecast)
-                        </MudText>
-
-                        <MudText Typo="Typo.h4">
-                            @period.Temperature°@period.TemperatureUnit
-                        </MudText>
-
-                        <MudText Typo="Typo.body1" Class="mt-2">
-                            @period.ShortForecast
-                        </MudText>
+                <MudItem xs="12" md="6">
+                    <MudPaper Class="pa-4 rounded-xl details-card" Elevation="0">
+                        <MudText Typo="Typo.h6" Class="mb-2">Forecast Details</MudText>
+                        <MudText Typo="Typo.body1">@current.DetailedForecast</MudText>
+                        @if (!string.IsNullOrWhiteSpace(current.WindSpeed))
+                        {
+                            <MudText Typo="Typo.body2" Class="mt-2 muted-text">
+                                Wind: @current.WindSpeed @current.WindDirection
+                            </MudText>
+                        }
                     </MudPaper>
                 </MudItem>
-            }
-        </MudGrid>
+            </MudGrid>
 
-        @if (hourlyForecastPeriods is not null && hourlyForecastPeriods.Count > 0)
-        {
-            <MudText Typo="Typo.h5" Class="mt-6 mb-3">
-                Next 24 Hours
-            </MudText>
+            <MudText Typo="Typo.h6" Class="mb-2">24 Hour Forecast</MudText>
+            <div class="tab-underline"></div>
 
-            <MudPaper Class="pa-4 rounded-xl hourly-section" Elevation="3">
-                <MudGrid>
-                    @foreach (var hour in hourlyForecastPeriods)
+            @if (selectedHourly.Count > 0)
+            {
+                <div class="hourly-card-section @(showAllHourly ? "hourly-card-section-expanded" : "hourly-card-section-collapsed")">
+                    @foreach (var hour in selectedHourly)
                     {
-                        <MudItem xs="6" sm="4" md="2">
-                            <MudPaper Class="pa-3 rounded-xl hourly-card" Elevation="0">
-                                <MudText Typo="Typo.subtitle2">
-                                    @FormatHour(hour.StartTime)
-                                </MudText>
-
-                                <MudText Class="hourly-weather-icon my-1">
-                                    @GetWeatherIcon(hour.ShortForecast)
-                                </MudText>
-
-                                <MudText Typo="Typo.h6">
-                                    @hour.Temperature°@hour.TemperatureUnit
-                                </MudText>
-
-                                <MudText Typo="Typo.caption">
-                                    @hour.ShortForecast
-                                </MudText>
-                            </MudPaper>
-                        </MudItem>
+                        <MudPaper Class="hourly-card" Elevation="0">
+                            <MudText Typo="Typo.subtitle2" Class="hourly-time">
+                                @hour.StartTime.ToString("h tt", CultureInfo.InvariantCulture).ToLower().Replace(" ", "")
+                            </MudText>
+                            <MudText Class="hourly-icon">@GetWeatherIcon(hour.ShortForecast)</MudText>
+                            <MudText Typo="Typo.h6">@hour.Temperature°</MudText>
+                            <MudText Typo="Typo.caption" Class="muted-text hourly-summary">
+                                @hour.ShortForecast
+                            </MudText>
+                        </MudPaper>
                     }
-                </MudGrid>
-            </MudPaper>
-        }
+                </div>
+
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Primary"
+                           Class="mt-3"
+                           OnClick="ToggleHourlyCards">
+                    @(showAllHourly ? "Show Less" : "Show More")
+                </MudButton>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info" Class="my-4">
+                    No hourly periods were returned for the selected day.
+                </MudAlert>
+            }
+
+            <div class="daily-card-row mt-5">
+                @foreach (var card in dailyCards)
+                {
+                    <MudPaper Class="@GetDailyCardClass(card.Period)"
+                              Elevation="0"
+                              @onclick="@(() => SelectPeriod(card.Period))">
+                        <MudText Typo="Typo.h6">@GetDayLabel(card.Period)</MudText>
+                        <MudText Class="small-weather-icon my-2">@GetWeatherIcon(card.Period.ShortForecast)</MudText>
+                        <MudText Typo="Typo.h6">
+                            @card.Period.Temperature°
+                            @if (card.LowTemperature is not null)
+                            {
+                                <span class="low-temp">@card.LowTemperature°</span>
+                            }
+                        </MudText>
+                    </MudPaper>
+                }
+            </div>
+        </MudPaper>
     }
 
 </MudContainer>
 
 <style>
-    .forecast-hero {
-        background: linear-gradient(135deg, #3f8ecb, #1f5f99);
+    .weather-dashboard {
+        background: #202124;
         color: white;
     }
 
-    .current-card {
-        background-color: rgba(18, 43, 67, 0.75);
-        color: white;
+    .location-title {
+        font-weight: 700;
     }
 
-    .forecast-card {
-        background-color: #173954;
-        color: white;
-        min-height: 210px;
+    .weather-header {
+        text-align: right;
     }
 
-    .weather-icon {
+    .muted-text {
+        color: rgba(255, 255, 255, 0.70);
+    }
+
+    .current-summary {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .big-icon {
         font-size: 72px;
-        text-align: center;
+        line-height: 1;
     }
+
+    .current-temp {
+        font-size: 86px;
+        line-height: 1;
+        font-weight: 300;
+    }
+
+    .unit-text {
+        font-size: 28px;
+        align-self: flex-start;
+        margin-top: 10px;
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .details-card {
+        background: rgba(255, 255, 255, 0.07);
+        color: white;
+    }
+
+    .tab-underline {
+        width: 140px;
+        height: 4px;
+        background: #f6c945;
+        margin-bottom: 24px;
+    }
+
+    .hourly-card-section {
+        display: flex;
+        gap: 12px;
+        padding-bottom: 6px;
+    }
+
+    .hourly-card-section-collapsed {
+        flex-wrap: nowrap;
+        overflow: hidden;
+    }
+
+    .hourly-card-section-expanded {
+        flex-wrap: wrap;
+        overflow: visible;
+    }
+
+    .hourly-card {
+        background: rgba(255, 255, 255, 0.07);
+        color: white;
+        flex: 0 0 118px;
+        min-height: 142px;
+        text-align: center;
+        border-radius: 16px;
+        padding: 12px;
+    }
+
+    .hourly-time {
+        color: rgba(255, 255, 255, 0.75);
+    }
+
+    .hourly-icon {
+        font-size: 30px;
+        margin: 8px 0;
+    }
+
+    .hourly-summary {
+        display: block;
+        line-height: 1.2;
+        margin-top: 4px;
+    }
+
+    .daily-card-row {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding-bottom: 6px;
+    }
+
+    .daily-card {
+        background: transparent;
+        color: white;
+        min-width: 128px;
+        min-height: 160px;
+        text-align: center;
+        cursor: pointer;
+        border-radius: 18px;
+        padding: 16px;
+        transition: background-color 0.15s ease-in-out;
+    }
+
+        .daily-card:hover,
+        .daily-card-selected {
+            background: rgba(255, 255, 255, 0.10);
+        }
 
     .small-weather-icon {
         font-size: 42px;
         text-align: center;
     }
 
-    .hourly-section {
-        background-color: #102b40;
-        color: white;
+    .low-temp {
+        color: rgba(255, 255, 255, 0.55);
+        font-size: 0.85em;
+        margin-left: 6px;
     }
 
-    .hourly-card {
-        background-color: rgba(255, 255, 255, 0.08);
-        color: white;
-        min-height: 160px;
-    }
+    @@media (max-width: 960px) {
+        .weather-header {
+            text-align: left;
+        }
 
-    .hourly-weather-icon {
-        font-size: 32px;
-        text-align: center;
+        .current-temp {
+            font-size: 64px;
+        }
     }
 </style>
 
@@ -206,7 +286,9 @@
 
     private List<ForecastPeriod>? forecastPeriods;
     private List<ForecastPeriod>? hourlyForecastPeriods;
+    private ForecastPeriod? selectedPeriod;
 
+    private bool showAllHourly;
     private bool isLoadingForecast;
     private string? forecastError;
     private string? forecastEmpty;
@@ -239,11 +321,12 @@
 
             var forecast = await WeatherService.GetForecastAsync(pointData.Properties.Forecast);
             forecastPeriods = forecast.Properties.Periods;
+            selectedPeriod = forecastPeriods.FirstOrDefault();
 
             if (!string.IsNullOrWhiteSpace(pointData.Properties.ForecastHourly))
             {
                 var hourlyForecast = await WeatherService.GetHourlyForecastAsync(pointData.Properties.ForecastHourly);
-                hourlyForecastPeriods = hourlyForecast.Properties.Periods.Take(24).ToList();
+                hourlyForecastPeriods = hourlyForecast.Properties.Periods;
             }
 
             if (forecastPeriods.Count == 0)
@@ -261,12 +344,63 @@
         }
     }
 
-    private string FormatHour(DateTimeOffset? startTime)
+    private void SelectPeriod(ForecastPeriod period)
     {
-        if (startTime is null)
-            return "N/A";
+        selectedPeriod = period;
+        showAllHourly = false;
+    }
 
-        return startTime.Value.ToLocalTime().ToString("h tt");
+    private void ToggleHourlyCards()
+    {
+        showAllHourly = !showAllHourly;
+    }
+
+    private IEnumerable<DailyCard> GetDailyCards()
+    {
+        if (forecastPeriods is null)
+            yield break;
+
+        for (var i = 0; i < forecastPeriods.Count; i++)
+        {
+            var period = forecastPeriods[i];
+
+            if (period.Name.Contains("night", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            int? low = null;
+            var nextPeriod = forecastPeriods.ElementAtOrDefault(i + 1);
+
+            if (nextPeriod is not null && nextPeriod.Name.Contains("night", StringComparison.OrdinalIgnoreCase))
+                low = nextPeriod.Temperature;
+
+            yield return new DailyCard(period, low);
+        }
+    }
+
+    private IEnumerable<ForecastPeriod> GetSelectedDayHourlyPeriods()
+    {
+        if (hourlyForecastPeriods is null || selectedPeriod is null)
+            return [];
+
+        var selectedDate = selectedPeriod.StartTime.Date;
+
+        return hourlyForecastPeriods
+            .Where(period => period.StartTime.Date == selectedDate)
+            .Take(24);
+    }
+
+    private string GetDailyCardClass(ForecastPeriod period)
+    {
+        var selectedClass = selectedPeriod == period ? " daily-card-selected" : "";
+        return $"daily-card{selectedClass}";
+    }
+
+    private string GetDayLabel(ForecastPeriod period)
+    {
+        if (period.StartTime != default)
+            return period.StartTime.ToString("ddd", CultureInfo.InvariantCulture);
+
+        return period.Name;
     }
 
     private string GetWeatherIcon(string forecast)
@@ -293,4 +427,6 @@
 
         return "🌤️";
     }
+
+    private record DailyCard(ForecastPeriod Period, int? LowTemperature);
 }
