@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a simple Blazor (MudBlazor) application that integrates with the National Weather Service (NWS) API to retrieve and display weather forecast data.
+This is a Blazor Server application built with MudBlazor that integrates with the National Weather Service (NWS) API to retrieve and present forecast data through an interactive weather dashboard.
 
 The app allows users to:
 
@@ -21,12 +21,16 @@ The app allows users to:
 
 ---
 
-## Features (Planned / In Progress)
+## Features
 
-* [x] Country_State lookup of weather zones/stations
-* [x] Selection of a specific zone or station
-* [x] Display of forecast data (temperature highs/lows, hourly/daily)
-* [x] Clean, responsive UI using MudBlazor
+* Search forecast zones by U.S. state
+* Select weather stations within a forecast zone
+* View daily forecast with high / low temperatures
+* View 24-hour forecast for the selected day
+* Interactive day selection dashboard
+* Responsive top-header navigation
+* Loading, validation, and error handling
+* Component-based styling using Razor CSS isolation
 
 ---
 
@@ -49,9 +53,10 @@ The app allows users to:
 
 ## Project Structure
 
-* `Components/` – Blazor UI components and pages
-* `Services/` – API integration logic (WeatherService)
-* `Program.cs` – Application entry point and service registration
+* `Components/Pages/` – Razor pages, code-behind files, and isolated CSS
+* `Models/` – NWS API DTOs
+* `Services/` – API integration logic (`WeatherService`)
+* `Program.cs` – Application startup and dependency injection
 
 ---
 
@@ -97,7 +102,7 @@ Example endpoints:
 
 ---
 
-## Development Plan & Progress
+## Development Plan & Progress Notes
 
 ### 1. Planning & Research (Time - 0.5 hour)
 - [x] Review project requirements
@@ -185,23 +190,30 @@ Example endpoints:
 - [x] Verify API failure handling
 - [x] Confirm forecast renders correctly
 
-### 7.5 UI Polish / Weather Dashboard (Time - 70min)
-- [x] Replace table-heavy layout with weather dashboard cards
-- [x] Add current forecast summary card
-- [x] Add selected state/zone/station header
-- [x] Add 7-day forecast cards
-- [x] Add selected day behavior
-- [x] Add hourly forecast section
+### 7.5 UI Polish / Weather Dashboard (Time - 90min)
+- [x] Replace side navigation with top header navigation
+- [x] Display forecast zone name instead of station ID
+- [x] Add low temperature beside current temperature
+- [x] Add hourly mini-card layout with Show More / Show Less
+- [x] Refactor pages into partial classes with CSS isolation
 
 ---
 
-### 8. Final Submission (Time - ___)
-- [ ] Update README with final details
-- [ ] Fill in total time spent
-- [ ] Clean up unused files
-- [ ] Final code review
-- [ ] Push to GitHub
-- [ ] Submit repo link
+### 8. Final Cleanup (Time - 90min)
+- [x] Refactor pages into partial classes (`.razor` + `.razor.cs`)
+- [x] Add Razor CSS isolation (`.razor.css`)
+- [x] Refactor code for readability and maintainability
+- [x] Clean up service injection naming and class dependencies
+- [x] Replace sidebar navigation with responsive top-header navigation
+- [x] Replace station identifiers with forecast zone names in dashboard UI
+- [x] Add current low temperature beside main temperature
+- [x] Replace hourly chart with 24-hour mini-card layout
+- [x] Add Show More / Show Less behavior for hourly forecast
+- [x] Improve table performance with paging and dense rendering
+- [x] Fix UI bugs, Razor parsing issues, and responsive layout edge cases
+- [x] Clean up unused files and scaffolded components
+- [x] Manually test final version across desktop and mobile layouts
+
 
 --- 
 
